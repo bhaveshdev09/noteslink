@@ -6,6 +6,7 @@ User = get_user_model()
 
 class Note(models.Model):
     owner = models.ForeignKey(User, related_name="notes", on_delete=models.CASCADE)
+    title = models.CharField(max_length=50, default="")
     content = models.TextField()
     shared_with = models.ManyToManyField(User, related_name="shared_notes", blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
