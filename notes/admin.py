@@ -3,7 +3,7 @@ from notes.models import Note
 
 
 class NoteAdmin(admin.ModelAdmin):
-    list_display = ["pk", "owner", "created_at"]
+    list_display = ["pk", "title", "owner", "created_at"]
 
 
 admin.site.register(Note, NoteAdmin)
