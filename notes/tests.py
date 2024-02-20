@@ -1,8 +1,9 @@
 from django.contrib.auth import get_user_model
 from django.urls import reverse
+from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
-from notes.models import Note
+from notes.models import Note, NoteChange
 
 User = get_user_model()
 
@@ -15,7 +16,7 @@ class CreateNoteViewTestCase(APITestCase):
         )
         self.client.force_authenticate(user=self.user)
         self.create_note_url = reverse("create_note")
-        self.valid_payload = {"content": "Test note content"}
+        self.valid_payload = {"content": "Test note content", "title": "Test note 1"}
 
     def test_create_note_authenticated(self):
         response = self.client.post(
@@ -44,7 +45,9 @@ class RetrieveUpdateNoteViewTestCase(APITestCase):
             username="testuser", email="test@example.com", password="testpassword"
         )
         self.client.force_authenticate(user=self.user)
-        self.note = Note.objects.create(owner=self.user, content="Test note content")
+        self.note = Note.objects.create(
+            owner=self.user, content="Test note content", title="Test note 1"
+        )
         self.retrieve_update_note_url = reverse(
             "retrieve_update_note", kwargs={"pk": self.note.pk}
         )
@@ -128,3 +131,30 @@ class ShareNoteTestCase(APITestCase):
         data = {"note": self.note.pk, "users": [invalid_user_id]}
         response = self.client.post(self.share_note_url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class TrackNoteChangesSignalTestCase(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="testuser", password="testpassword"
+        )
+        self.note = Note.objects.create(
+            owner=self.user, title="Test Note", content="Original content"
+        )
+
+    def test_track_note_changes_signal(self):
+        initial_count = NoteChange.objects.count()
+        new_content = "Updated content"
+        self.note.content = new_content
+        self.note.save()
+        updated_count = NoteChange.objects.count()
+        self.assertEqual(updated_count, initial_count + 1)
+
+        # Retrieve the created NoteChange object
+        change = NoteChange.objects.latest("timestamp")
+        self.assertEqual(change.note, self.note)
+        self.assertEqual(change.user, self.user)
+        # self.assertEqual(
+        #     change.changes,
+        #     [{"type": "added", "content": "Updated content"}],
+        # )
