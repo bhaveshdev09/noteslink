@@ -21,6 +21,7 @@ class Migration(migrations.Migration):
                 ('title', models.CharField(default='', max_length=50)),
                 ('content', models.TextField()),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('updated_at', models.DateTimeField(auto_now=True)),
                 ('owner', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='notes', to=settings.AUTH_USER_MODEL)),
                 ('shared_with', models.ManyToManyField(blank=True, related_name='shared_notes', to=settings.AUTH_USER_MODEL)),
             ],

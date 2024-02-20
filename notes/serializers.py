@@ -1,7 +1,9 @@
 from rest_framework import serializers
-from notes.models import Note
-from users.models import CustomUser
 from rest_framework.exceptions import PermissionDenied
+
+from notes.models import Note, NoteChange
+from users.models import CustomUser
+from users.serializers import RetriveUserSerializer
 
 
 class NoteSerializer(serializers.ModelSerializer):
@@ -12,6 +14,16 @@ class NoteSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data["owner"] = self.context.get("request").user
         return super().create(validated_data)
+
+
+class RetriveNoteSerializer(serializers.ModelSerializer):
+    owner = RetriveUserSerializer(instance=CustomUser.objects.all())
+    shared_with = RetriveUserSerializer(many=True)
+
+    class Meta:
+        model = Note
+        fields = "__all__"
+
 
 
 class ShareNoteSerializer(serializers.ModelSerializer):
@@ -47,3 +59,12 @@ class ShareNoteSerializer(serializers.ModelSerializer):
         # Add user in shared users
         instance.shared_with.add(*list(user_list))
         return instance
+
+
+class NoteChangeSerializer(serializers.ModelSerializer):
+    note = serializers.StringRelatedField()
+    user = RetriveUserSerializer()
+
+    class Meta:
+        model = NoteChange
+        fields = ["timestamp", "user", "changes", "note"]
