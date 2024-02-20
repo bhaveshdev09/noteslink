@@ -40,5 +40,5 @@ def track_note_changes(sender, instance, **kwargs):
         has_changed, changes = calculate_changes(current_content, previous_content)
         if has_changed:
             NoteChange.objects.create(
-                note=instance, user=instance.owner, changes=changes
+                note=instance, user=instance.user, changes=changes
             )

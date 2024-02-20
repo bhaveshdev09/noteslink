@@ -5,6 +5,7 @@ from notes.models import Note
 from notes.serializers import (
     NoteSerializer,
     RetriveNoteSerializer,
+    UpdateNoteSerializer,
     ShareNoteSerializer,
     NoteChangeSerializer,
 )
@@ -24,12 +25,17 @@ class CreateNoteView(generics.CreateAPIView):
 
 class RetriveUpdateNoteView(generics.RetrieveUpdateAPIView):
     queryset = Note.objects.all()
-    serializer_class = NoteSerializer
+    serializer_class = UpdateNoteSerializer
     permission_classes = [custompermissions.IsOwnerOrSharedUser]
 
     def get(self, request, *args, **kwargs):
         self.serializer_class = RetriveNoteSerializer
         return super().get(request, *args, **kwargs)
+
+    def get_serializer(self, *args, **kwargs):
+        serializer = super().get_serializer(*args, **kwargs)
+        serializer.context.update({"request": self.request})
+        return serializer
 
 
 class ShareNoteView(generics.CreateAPIView):
