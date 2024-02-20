@@ -1,15 +1,16 @@
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.generics import GenericAPIView
 from rest_framework_simplejwt.views import TokenObtainPairView
 from users.serializers import UserSerializer, CustomTokenObtainPairSerializer
 
 
 # Create your views here.
-class SignUpView(APIView):
+class SignUpView(GenericAPIView):
+    serializer_class = UserSerializer
+
     def post(self, request):
-        serializer = UserSerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)

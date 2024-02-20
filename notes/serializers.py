@@ -16,6 +16,17 @@ class NoteSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 
+class UpdateNoteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Note
+        exclude = ["owner", "shared_with"]
+
+    def update(self, instance, validated_data):
+        user = self.context.get("request").user
+        instance.user = user
+        return super().update(instance, validated_data)
+
+
 class RetriveNoteSerializer(serializers.ModelSerializer):
     owner = RetriveUserSerializer(instance=CustomUser.objects.all())
     shared_with = RetriveUserSerializer(many=True)
@@ -23,7 +34,6 @@ class RetriveNoteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Note
         fields = "__all__"
-
 
 
 class ShareNoteSerializer(serializers.ModelSerializer):
